@@ -149,7 +149,6 @@ export default function LotteryWheel() {
     const { startAngle, endAngle } = getPrizeAngleRange(winningPrizeIndex);
     const prizeCenterAngle = (startAngle + endAngle) / 2;
     const extraRotations = EXTRA_ROTATIONS * 360;
-    // 指针在顶部，我们需要转盘旋转让奖项中心到达指针位置
     const totalRotation = rotation + extraRotations + (360 - prizeCenterAngle);
     
     setRotation(totalRotation);
@@ -216,18 +215,18 @@ export default function LotteryWheel() {
         {/* Wheel */}
         <div
           ref={wheelRef}
-          className="w-full h-full rounded-full relative transition-transform ease-out"
+          className="w-full h-full rounded-full relative transition-transform ease-out overflow-hidden"
           style={{
             transform: `rotate(${rotation}deg)`,
             transitionDuration: isSpinning ? `${ROTATION_DURATION}ms` : '0ms',
           }}
         >
-          {/* SVG Wheel */}
+          {/* Single SVG for all sectors - starting from top (0 degrees) */}
           <svg className="absolute w-full h-full" viewBox="0 0 200 200">
             {PRIZES.map((prize, index) => {
               const { startAngle, endAngle } = getPrizeAngleRange(index);
               const angleSize = endAngle - startAngle;
-              // SVG坐标0度在右边，减90度让它从顶部开始
+              
               const svgStartAngle = (startAngle - 90) * Math.PI / 180;
               const svgEndAngle = (endAngle - 90) * Math.PI / 180;
               
@@ -252,8 +251,6 @@ export default function LotteryWheel() {
           {PRIZES.map((prize, index) => {
             const { startAngle, endAngle } = getPrizeAngleRange(index);
             const midAngle = (startAngle + endAngle) / 2;
-            // 标签旋转角度，减90度让顶部文字正向
-            const labelRotateAngle = midAngle - 90;
             
             return (
               <div 
@@ -263,7 +260,7 @@ export default function LotteryWheel() {
                   color: prize.textColor,
                   left: '50%',
                   top: '50%',
-                  transform: `translate(-50%, -50%) rotate(${labelRotateAngle}deg) translateY(-60px)`,
+                  transform: `translate(-50%, -50%) rotate(${midAngle - 90}deg) translateY(-60px) rotate(-${midAngle - 90}deg)`,
                   textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
                 }}
               >

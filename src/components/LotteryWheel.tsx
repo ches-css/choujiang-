@@ -148,9 +148,9 @@ export default function LotteryWheel() {
     const winningPrizeIndex = getRandomPrizeIndex();
     const { startAngle, endAngle } = getPrizeAngleRange(winningPrizeIndex);
     const prizeCenterAngle = (startAngle + endAngle) / 2;
-    const targetAngle = (360 - prizeCenterAngle) % 360;
     const extraRotations = EXTRA_ROTATIONS * 360;
-    const totalRotation = rotation + extraRotations + targetAngle;
+    // 指针在顶部，我们需要转盘旋转让奖项中心到达指针位置
+    const totalRotation = rotation + extraRotations + (360 - prizeCenterAngle);
     
     setRotation(totalRotation);
     
@@ -172,47 +172,6 @@ export default function LotteryWheel() {
   };
 
   const confettiColors = ['#FFD700', '#C41E3A', '#FF8C00', '#228B22', '#4169E1', '#FF69B4'];
-
-  const renderPrizeSegment = (index: number) => {
-    const { startAngle, endAngle } = getPrizeAngleRange(index);
-    const prize = PRIZES[index];
-    const angleSize = endAngle - startAngle;
-    const midAngle = (startAngle + endAngle) / 2;
-
-    return (
-      <div
-        key={index}
-        className="absolute w-full h-full"
-        style={{
-          transform: `rotate(${startAngle}deg)`,
-        }}
-      >
-        <svg className="absolute w-full h-full" viewBox="0 0 200 200">
-          <path
-            d={`
-              M 100 100
-              L ${100 + 90 * Math.cos(startAngle * Math.PI / 180)} ${100 + 90 * Math.sin(startAngle * Math.PI / 180)}
-              A 90 90 0 ${angleSize > 180 ? 1 : 0} 1 ${100 + 90 * Math.cos(endAngle * Math.PI / 180)} ${100 + 90 * Math.sin(endAngle * Math.PI / 180)}
-              Z
-            `}
-            fill={prize.color}
-            stroke="#FFD700"
-            strokeWidth="3"
-          />
-        </svg>
-        <div 
-          className="absolute top-4 left-1/2 -translate-x-1/2 text-sm md:text-base font-bold whitespace-nowrap"
-          style={{ 
-            color: prize.textColor,
-            transform: `rotate(${30 - startAngle - angleSize / 2}deg)`,
-            textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
-          }}
-        >
-          {prize.name}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#8B0000] via-[#C41E3A] to-[#8B0000] flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -263,8 +222,55 @@ export default function LotteryWheel() {
             transitionDuration: isSpinning ? `${ROTATION_DURATION}ms` : '0ms',
           }}
         >
-          {/* Wheel segments */}
-          {PRIZES.map((_, index) => renderPrizeSegment(index))}
+          {/* SVG Wheel */}
+          <svg className="absolute w-full h-full" viewBox="0 0 200 200">
+            {PRIZES.map((prize, index) => {
+              const { startAngle, endAngle } = getPrizeAngleRange(index);
+              const angleSize = endAngle - startAngle;
+              // SVG坐标0度在右边，减90度让它从顶部开始
+              const svgStartAngle = (startAngle - 90) * Math.PI / 180;
+              const svgEndAngle = (endAngle - 90) * Math.PI / 180;
+              
+              return (
+                <path
+                  key={index}
+                  d={`
+                    M 100 100
+                    L ${100 + 90 * Math.cos(svgStartAngle)} ${100 + 90 * Math.sin(svgStartAngle)}
+                    A 90 90 0 ${angleSize > 180 ? 1 : 0} 1 ${100 + 90 * Math.cos(svgEndAngle)} ${100 + 90 * Math.sin(svgEndAngle)}
+                    Z
+                  `}
+                  fill={prize.color}
+                  stroke="#FFD700"
+                  strokeWidth="3"
+                />
+              );
+            })}
+          </svg>
+          
+          {/* Prize labels */}
+          {PRIZES.map((prize, index) => {
+            const { startAngle, endAngle } = getPrizeAngleRange(index);
+            const midAngle = (startAngle + endAngle) / 2;
+            // 标签旋转角度，减90度让顶部文字正向
+            const labelRotateAngle = midAngle - 90;
+            
+            return (
+              <div 
+                key={index}
+                className="absolute text-sm md:text-base font-bold whitespace-nowrap"
+                style={{ 
+                  color: prize.textColor,
+                  left: '50%',
+                  top: '50%',
+                  transform: `translate(-50%, -50%) rotate(${labelRotateAngle}deg) translateY(-60px)`,
+                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                }}
+              >
+                {prize.name}
+              </div>
+            );
+          })}
           
           {/* Center decoration */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-[#C41E3A] to-[#8B0000] border-4 border-[#FFD700] flex items-center justify-center shadow-xl z-10">

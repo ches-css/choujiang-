@@ -1,12 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 const PRIZES = [
-  { name: '一等奖', color: '#FFD700', textColor: '#8B0000' },
-  { name: '二等奖', color: '#C41E3A', textColor: '#FFD700' },
-  { name: '三等奖', color: '#FF8C00', textColor: '#fff' },
-  { name: '四等奖', color: '#FFD700', textColor: '#8B0000' },
-  { name: '五等奖', color: '#228B22', textColor: '#fff' },
-  { name: '幸运奖', color: '#4169E1', textColor: '#fff' },
+  { name: '一等奖', color: '#FFD700', textColor: '#8B0000', probability: 0.05 },
+  { name: '二等奖', color: '#C41E3A', textColor: '#FFD700', probability: 0.15 },
+  { name: '三等奖', color: '#FF8C00', textColor: '#fff', probability: 0.3 },
+  { name: '幸运奖', color: '#4169E1', textColor: '#fff', probability: 0.5 },
 ];
 
 const ROTATION_DURATION = 3000;
@@ -96,6 +94,20 @@ function createAudioManager(): AudioManagerType {
   return { startRotate, stopRotate, playWin };
 }
 
+const getPrizeAngle = (index: number) => {
+  let startAngle = 0;
+  for (let i = 0; i < index; i++) {
+    startAngle += PRIZES[i].probability * 360;
+  }
+  return startAngle;
+};
+
+const getPrizeAngleRange = (index: number) => {
+  const startAngle = getPrizeAngle(index);
+  const endAngle = startAngle + PRIZES[index].probability * 360;
+  return { startAngle, endAngle };
+};
+
 export default function LotteryWheel() {
   const [rotation, setRotation] = useState(0);
   const [isSpinning, setIsSpinning] = useState(false);
@@ -112,6 +124,18 @@ export default function LotteryWheel() {
     };
   }, []);
 
+  const getRandomPrizeIndex = () => {
+    const random = Math.random();
+    let cumulative = 0;
+    for (let i = 0; i < PRIZES.length; i++) {
+      cumulative += PRIZES[i].probability;
+      if (random < cumulative) {
+        return i;
+      }
+    }
+    return PRIZES.length - 1;
+  };
+
   const spin = useCallback(() => {
     if (isSpinning || !audioRef.current) return;
     
@@ -121,9 +145,12 @@ export default function LotteryWheel() {
     
     audioRef.current.startRotate();
     
+    const winningPrizeIndex = getRandomPrizeIndex();
+    const { startAngle, endAngle } = getPrizeAngleRange(winningPrizeIndex);
+    const prizeCenterAngle = (startAngle + endAngle) / 2;
+    const targetAngle = (360 - prizeCenterAngle) % 360;
     const extraRotations = EXTRA_ROTATIONS * 360;
-    const randomAngle = Math.random() * 360;
-    const totalRotation = rotation + extraRotations + randomAngle;
+    const totalRotation = rotation + extraRotations + targetAngle;
     
     setRotation(totalRotation);
     
@@ -131,10 +158,7 @@ export default function LotteryWheel() {
       audioRef.current?.stopRotate();
       audioRef.current?.playWin();
       
-      const normalizedAngle = ((totalRotation % 360) + 360) % 360;
-      const prizeIndex = Math.floor((360 - normalizedAngle) / 60) % 6;
-      const prize = PRIZES[prizeIndex];
-      
+      const prize = PRIZES[winningPrizeIndex];
       setResultPrize(prize.name);
       setShowResult(true);
       setShowConfetti(true);
@@ -149,6 +173,47 @@ export default function LotteryWheel() {
 
   const confettiColors = ['#FFD700', '#C41E3A', '#FF8C00', '#228B22', '#4169E1', '#FF69B4'];
 
+  const renderPrizeSegment = (index: number) => {
+    const { startAngle, endAngle } = getPrizeAngleRange(index);
+    const prize = PRIZES[index];
+    const angleSize = endAngle - startAngle;
+    const midAngle = (startAngle + endAngle) / 2;
+
+    return (
+      <div
+        key={index}
+        className="absolute w-full h-full"
+        style={{
+          transform: `rotate(${startAngle}deg)`,
+        }}
+      >
+        <svg className="absolute w-full h-full" viewBox="0 0 200 200">
+          <path
+            d={`
+              M 100 100
+              L ${100 + 90 * Math.cos(startAngle * Math.PI / 180)} ${100 + 90 * Math.sin(startAngle * Math.PI / 180)}
+              A 90 90 0 ${angleSize > 180 ? 1 : 0} 1 ${100 + 90 * Math.cos(endAngle * Math.PI / 180)} ${100 + 90 * Math.sin(endAngle * Math.PI / 180)}
+              Z
+            `}
+            fill={prize.color}
+            stroke="#FFD700"
+            strokeWidth="3"
+          />
+        </svg>
+        <div 
+          className="absolute top-4 left-1/2 -translate-x-1/2 text-sm md:text-base font-bold whitespace-nowrap"
+          style={{ 
+            color: prize.textColor,
+            transform: `rotate(${30 - startAngle - angleSize / 2}deg)`,
+            textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+          }}
+        >
+          {prize.name}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#8B0000] via-[#C41E3A] to-[#8B0000] flex flex-col items-center justify-center p-4 relative overflow-hidden">
       {/* Decorative background elements */}
@@ -159,9 +224,22 @@ export default function LotteryWheel() {
       </div>
 
       {/* Title */}
-      <h1 className="text-4xl md:text-5xl font-bold text-[#FFD700] mb-8 text-center drop-shadow-lg animate-float z-10">
+      <h1 className="text-4xl md:text-5xl font-bold text-[#FFD700] mb-4 text-center drop-shadow-lg animate-float z-10">
         🎊 幸运抽奖 🎊
       </h1>
+
+      {/* Probability info */}
+      <div className="flex flex-wrap justify-center gap-3 mb-6 z-10">
+        {PRIZES.map((prize, i) => (
+          <div key={i} className="flex items-center gap-2 bg-black/20 px-3 py-1 rounded-full">
+            <div 
+              className="w-3 h-3 rounded-full"
+              style={{ backgroundColor: prize.color }}
+            />
+            <span className="text-white text-sm">{prize.name}: {(prize.probability * 100).toFixed(0)}%</span>
+          </div>
+        ))}
+      </div>
 
       {/* Wheel container */}
       <div className="relative w-72 h-72 md:w-96 md:h-96 z-10">
@@ -186,43 +264,7 @@ export default function LotteryWheel() {
           }}
         >
           {/* Wheel segments */}
-            {PRIZES.map((prize, index) => {
-              const angle = index * 60;
-              return (
-                <div
-                  key={index}
-                  className="absolute w-full h-full"
-                  style={{
-                    clipPath: `polygon(50% 50%, 50% 0%, ${50 + 50 * Math.tan((30 + index * 60) * Math.PI / 180)}% 0%)`,
-                    transform: `rotate(${angle}deg)`,
-                  }}
-                >
-                  <svg className="absolute w-full h-full" viewBox="0 0 200 200">
-                    <path
-                      d={`
-                        M 100 100
-                        L ${100 + 90 * Math.cos((index * 60 - 30) * Math.PI / 180)} ${100 + 90 * Math.sin((index * 60 - 30) * Math.PI / 180)}
-                        A 90 90 0 0 1 ${100 + 90 * Math.cos((index * 60 + 30) * Math.PI / 180)} ${100 + 90 * Math.sin((index * 60 + 30) * Math.PI / 180)}
-                        Z
-                      `}
-                      fill={prize.color}
-                      stroke="#FFD700"
-                      strokeWidth="3"
-                    />
-                  </svg>
-                  <div 
-                    className="absolute top-4 left-1/2 -translate-x-1/2 text-sm md:text-base font-bold whitespace-nowrap"
-                    style={{ 
-                      color: prize.textColor,
-                      transform: `rotate(${60 - angle}deg)`,
-                      textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
-                    }}
-                  >
-                    {prize.name}
-                  </div>
-                </div>
-              );
-            })}
+          {PRIZES.map((_, index) => renderPrizeSegment(index))}
           
           {/* Center decoration */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-[#C41E3A] to-[#8B0000] border-4 border-[#FFD700] flex items-center justify-center shadow-xl z-10">

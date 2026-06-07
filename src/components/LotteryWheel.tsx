@@ -1,10 +1,10 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 
 const PRIZES = [
-  { name: '一等奖', color: '#FFD700', textColor: '#8B0000', probability: 0.05 },
-  { name: '二等奖', color: '#C41E3A', textColor: '#FFD700', probability: 0.15 },
-  { name: '三等奖', color: '#FF8C00', textColor: '#fff', probability: 0.3 },
-  { name: '男社区', color: '#4169E1', textColor: '#fff', probability: 0.5 },
+  { name: '一等奖', displayName: '一等奖', color: '#FFD700', textColor: '#8B0000', probability: 0.05 },
+  { name: '二等奖', displayName: '二等奖', color: '#C41E3A', textColor: '#FFD700', probability: 0.15 },
+  { name: '三等奖', displayName: '三等奖', color: '#FF8C00', textColor: '#fff', probability: 0.3 },
+  { name: '男社区', displayName: '幸运奖', color: '#4169E1', textColor: '#fff', probability: 0.5 },
 ];
 
 const ROTATION_DURATION = 3000;
@@ -158,7 +158,7 @@ export default function LotteryWheel() {
       audioRef.current?.playWin();
       
       const prize = PRIZES[winningPrizeIndex];
-      setResultPrize(prize.name);
+      setResultPrize(prize.displayName);
       setShowResult(true);
       setShowConfetti(true);
       setIsSpinning(false);
@@ -194,7 +194,7 @@ export default function LotteryWheel() {
               className="w-3 h-3 rounded-full"
               style={{ backgroundColor: prize.color }}
             />
-            <span className="text-white text-sm">{prize.name}: {(prize.probability * 100).toFixed(0)}%</span>
+            <span className="text-white text-sm">{prize.displayName}: {(prize.probability * 100).toFixed(0)}%</span>
           </div>
         ))}
       </div>

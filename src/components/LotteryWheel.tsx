@@ -4,7 +4,7 @@ const PRIZES = [
   { name: '一等奖', color: '#FFD700', textColor: '#8B0000', probability: 0.05 },
   { name: '二等奖', color: '#C41E3A', textColor: '#FFD700', probability: 0.15 },
   { name: '三等奖', color: '#FF8C00', textColor: '#fff', probability: 0.3 },
-  { name: '幸运奖', color: '#4169E1', textColor: '#fff', probability: 0.5 },
+  { name: '男社区', color: '#4169E1', textColor: '#fff', probability: 0.5 },
 ];
 
 const ROTATION_DURATION = 3000;
@@ -252,16 +252,20 @@ export default function LotteryWheel() {
             const { startAngle, endAngle } = getPrizeAngleRange(index);
             const midAngle = (startAngle + endAngle) / 2;
             
+            const isFirstPrize = index === 0;
+            
             return (
               <div 
                 key={index}
-                className="absolute text-sm md:text-base font-bold whitespace-nowrap"
+                className={`absolute font-bold whitespace-nowrap ${isFirstPrize ? 'text-xs md:text-sm' : 'text-sm md:text-base'}`}
                 style={{ 
                   color: prize.textColor,
                   left: '50%',
                   top: '50%',
                   transform: `translate(-50%, -50%) rotate(${midAngle - 90}deg) translateY(-60px) rotate(-${midAngle - 90}deg)`,
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)'
+                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
+                  fontWeight: isFirstPrize ? '900' : 'bold',
+                  letterSpacing: isFirstPrize ? '0.1em' : 'normal'
                 }}
               >
                 {prize.name}

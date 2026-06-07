@@ -247,31 +247,7 @@ export default function LotteryWheel() {
             })}
           </svg>
           
-          {/* Prize labels */}
-          {PRIZES.map((prize, index) => {
-            const { startAngle, endAngle } = getPrizeAngleRange(index);
-            const midAngle = (startAngle + endAngle) / 2;
-            
-            const isFirstPrize = index === 0;
-            
-            return (
-              <div 
-                key={index}
-                className={`absolute font-bold whitespace-nowrap ${isFirstPrize ? 'text-xs md:text-sm' : 'text-sm md:text-base'}`}
-                style={{ 
-                  color: prize.textColor,
-                  left: '50%',
-                  top: '50%',
-                  transform: `translate(-50%, -50%) rotate(${midAngle - 90}deg) translateY(-60px) rotate(-${midAngle - 90}deg)`,
-                  textShadow: '1px 1px 2px rgba(0,0,0,0.5)',
-                  fontWeight: isFirstPrize ? '900' : 'bold',
-                  letterSpacing: isFirstPrize ? '0.1em' : 'normal'
-                }}
-              >
-                {prize.name}
-              </div>
-            );
-          })}
+
           
           {/* Center decoration */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-[#C41E3A] to-[#8B0000] border-4 border-[#FFD700] flex items-center justify-center shadow-xl z-10">

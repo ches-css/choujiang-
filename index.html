@@ -1,0 +1,61 @@
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;幸运大转盘&lt;/title&gt;
+    &lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="container"&gt;
+        &lt;div class="header"&gt;
+            &lt;h1&gt;🎉 幸运大转盘 🎉&lt;/h1&gt;
+            &lt;p class="subtitle"&gt;好运连连，大奖不断&lt;/p&gt;
+        &lt;/div&gt;
+        
+        &lt;div class="wheel-container"&gt;
+            &lt;div class="pointer"&gt;&lt;/div&gt;
+            &lt;div class="wheel-wrapper"&gt;
+                &lt;canvas id="wheel" class="wheel"&gt;&lt;/canvas&gt;
+            &lt;/div&gt;
+            &lt;button id="startBtn" class="start-btn"&gt;开始抽奖&lt;/button&gt;
+        &lt;/div&gt;
+        
+        &lt;div class="prize-list"&gt;
+            &lt;h3&gt;🎁 奖项设置&lt;/h3&gt;
+            &lt;div class="prizes"&gt;
+                &lt;div class="prize-item"&gt;🏆 一等奖&lt;/div&gt;
+                &lt;div class="prize-item"&gt;🥈 二等奖&lt;/div&gt;
+                &lt;div class="prize-item"&gt;🥉 三等奖&lt;/div&gt;
+                &lt;div class="prize-item"&gt;🎖️ 四等奖&lt;/div&gt;
+                &lt;div class="prize-item"&gt;🏅 五等奖&lt;/div&gt;
+                &lt;div class="prize-item"&gt;🍀 幸运奖&lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div id="resultModal" class="modal hidden"&gt;
+        &lt;div class="modal-content"&gt;
+            &lt;div class="modal-header"&gt;
+                &lt;span class="close"&gt;&amp;times;&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div class="modal-body"&gt;
+                &lt;div class="celebration"&gt;🎊&lt;/div&gt;
+                &lt;h2&gt;恭喜中奖！&lt;/h2&gt;
+                &lt;p id="prizeResult" class="prize-name"&gt;&lt;/p&gt;
+                &lt;button id="closeModal" class="confirm-btn"&gt;确定&lt;/button&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="decorations"&gt;
+        &lt;div class="lantern lantern-1"&gt;🏮&lt;/div&gt;
+        &lt;div class="lantern lantern-2"&gt;🏮&lt;/div&gt;
+        &lt;div class="firecracker firecracker-1"&gt;🧨&lt;/div&gt;
+        &lt;div class="firecracker firecracker-2"&gt;🧨&lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;script src="script.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
